@@ -1,5 +1,5 @@
 {
-  "name": "helloworld",
+  "name": "test_bet",
   "version": "0.0.1",
   "description": "",
   "repository": {
@@ -10,11 +10,12 @@
   "author": "",
   "license": "MIT",
   "scripts": {
+    "deploy": "solana program deploy /home/nekonb/example-helloworld/dist/program/programbet.so ",
     "start": "ts-node src/client/main.ts",
     "start-with-test-validator": "start-server-and-test 'solana-test-validator --reset --quiet' http://localhost:8899/health start",
     "lint": "eslint --ext .ts src/client/* && prettier --check \"src/client/**/*.ts\"",
     "lint:fix": "eslint --ext .ts src/client/* --fix && prettier --write \"src/client/**/*.ts\"",
-    "clean": "npm run clean:program-c && npm run clean:program-rust",
+    "clean": "npm run clean:program-rust",
     "build:program-c": "V=1 make -C ./src/program-c helloworld",
     "clean:program-c": "V=1 make -C ./src/program-c clean",
     "build:program-rust": "cargo build-bpf --manifest-path=./src/program-rust/Cargo.toml --bpf-out-dir=dist/program",
@@ -23,13 +24,19 @@
     "pretty": "prettier --write '{,src/**/}*.ts'"
   },
   "dependencies": {
+    "@solana/buffer-layout": "3.0.0",
     "@solana/web3.js": "^1.33.0",
+    "bn.js": "^5.2.1",
     "borsh": "^0.7.0",
+    "buffer": "6.0.3",
+    "buffer-layout": "^1.2.2",
+    "crypto": "^1.0.1",
     "mz": "^2.7.0",
     "yaml": "^2.0.0"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
+    "@types/bn.js": "^5.1.0",
     "@types/eslint": "^8.2.2",
     "@types/eslint-plugin-prettier": "^3.1.0",
     "@types/mz": "^2.7.2",
