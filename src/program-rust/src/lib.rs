@@ -28,7 +28,7 @@ pub struct Bid {
 #[derive(BorshDeserialize, BorshSerialize, Debug)]
 pub struct BidData {
     // list bids
-    pub bids: Vec<Bid>
+    pub bids: Vec<Bid>,
 }
 
 // Declare and export the program's entrypoint
@@ -36,41 +36,131 @@ entrypoint!(process_instruction);
 
 // Program entrypoint's implementation
 pub fn process_instruction(
-    program_id: &Pubkey, 
-    accounts: &[AccountInfo], 
-    instruction_data: &[u8], 
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    instruction_data: &[u8],
 ) -> ProgramResult {
     msg!("Hello World Rust program entrypoint");
-    let acc_iter = &mut accounts.iter();
-    let user = next_account_info(acc_iter)?;
-    let bet = next_account_info(acc_iter)?;
-    // let program = next_account_info(acc_iter)?;
-    msg!("bet key: {:?}", bet.key);
     let instruction = HelloInstruction::unpack(instruction_data)?;
     msg!("TEST: {:?}", instruction);
+    msg!("???");
 
     match instruction {
-        HelloInstruction::Increment => {}
-        HelloInstruction::Decrement => {}
-
-        HelloInstruction::CreateBid(xjust, side) => {
-            msg!("value: {:?}", xjust);
-            msg!("side: {:?}", side);
-            
-            let mut bet_account = BidData::try_from_slice(&bet.data.borrow())?;
-            let bid = Bid {
-                side: side,
-                xjust: xjust,
-                pubkey: user.key.to_string()
-            };
-            msg!("bid: {:?}", bid);
-            bet_account.bids.push(bid);
-         
-            bet_account.serialize(&mut &mut bet.data.borrow_mut()[..])?;
+        HelloInstruction::CreateBet(amount) => {
+            let acc_iter = &mut accounts.iter();
+            let user = next_account_info(acc_iter)?;
+            let bet = next_account_info(acc_iter)?;
+            msg!("amount: {:?}", amount);
             invoke(
-                &system_instruction::transfer(user.key, bet.key, xjust),
+                &system_instruction::transfer(user.key, bet.key, amount),
                 &[user.clone(), bet.clone()],
             )?;
+        }
+
+
+
+        HelloInstruction::CreateBidApprove(xjust) => {
+            let acc_iter = &mut accounts.iter();
+            let user = next_account_info(acc_iter)?;
+            let user_token = next_account_info(acc_iter)?;
+            let bet_token = next_account_info(acc_iter)?;
+            let token_info = next_account_info(acc_iter)?;
+            msg!("value(XJUST): {:?}", xjust);
+            let tx = spl_token::instruction::approve(
+                token_info.key, 
+                user_token.key,
+                bet_token.key,
+                user.key,
+                &[user.key],
+                xjust
+            )?;
+            invoke(
+                &tx,
+                &[
+                    user_token.clone(),
+                    bet_token.clone(),
+                    user.clone(),
+                    token_info.clone()
+                ],
+            )?;
+        }
+
+        HelloInstruction::CreateBidTransfer(xjust) => {
+            let acc_iter = &mut accounts.iter();
+            let user = next_account_info(acc_iter)?;
+            let user_token = next_account_info(acc_iter)?;
+            let bet_token = next_account_info(acc_iter)?;
+            let token_info = next_account_info(acc_iter)?;
+            msg!("value(XJUST): {:?}", xjust);
+            let tx = spl_token::instruction::transfer(
+                token_info.key, 
+                user_token.key,
+                bet_token.key,
+                user.key,
+                &[user.key],
+                xjust
+            )?;
+            invoke(
+                &tx,
+                &[
+                    user_token.clone(),
+                    bet_token.clone(),
+                    user.clone(),
+                    token_info.clone()
+                ],
+            )?;
+        }
+
+        HelloInstruction::DrawAmount(draw) => {
+            let acc_iter = &mut accounts.iter();
+            let bet = next_account_info(acc_iter)?;
+            let bet_token = next_account_info(acc_iter)?;
+            let user_token = next_account_info(acc_iter)?;
+            let token = next_account_info(acc_iter)?;
+            let tx = spl_token::instruction::transfer(
+                token.key, 
+                bet_token.key,
+                user_token.key,
+                bet.key,
+                &[bet.key],
+                draw
+            )?;
+            invoke(
+                &tx,
+                &[
+                    bet_token.clone(),
+                    user_token.clone(),
+                    bet.clone(),
+                    token.clone()
+                ],
+            )?;
+            msg!("user: {:?} draw: {:?}", user_token.key, draw);
+        }
+
+        HelloInstruction::AirdropToken => {
+            let acc_iter = &mut accounts.iter();
+            let handler = next_account_info(acc_iter)?;
+            let handler_token = next_account_info(acc_iter)?;
+            let user_token = next_account_info(acc_iter)?;
+            let token = next_account_info(acc_iter)?;
+            let tx = spl_token::instruction::transfer(
+                token.key, 
+                handler_token.key,
+                user_token.key,
+                handler.key,
+                &[handler.key],
+                100_000_000
+            )?;
+            invoke(
+                &tx,
+                &[
+                    handler_token.clone(),
+                    user_token.clone(),
+                    handler.clone(),
+                    token.clone()
+                ],
+            )?;
+            msg!("airdrop token to: {:?} draw: {:?}", user_token.key, 100_000_000);
         }
     }
 

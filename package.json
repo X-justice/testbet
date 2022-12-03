@@ -10,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "deploy": "solana program deploy /home/nekonb/example-helloworld/dist/program/programbet.so ",
+    "deploy": "solana program deploy dist/program/programbet.so --program-id dist/program/programbet-keypair.json",
     "start": "ts-node src/client/main.ts",
     "start-with-test-validator": "start-server-and-test 'solana-test-validator --reset --quiet' http://localhost:8899/health start",
     "lint": "eslint --ext .ts src/client/* && prettier --check \"src/client/**/*.ts\"",
@@ -28,6 +28,7 @@
     "@solana/web3.js": "^1.33.0",
     "bn.js": "^5.2.1",
     "borsh": "^0.7.0",
+    "bs58": "^5.0.0",
     "buffer": "6.0.3",
     "buffer-layout": "^1.2.2",
     "crypto": "^1.0.1",
